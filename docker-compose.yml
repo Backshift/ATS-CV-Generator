@@ -1,0 +1,12 @@
+services:
+  cv_generator:
+    build: .
+    environment:
+      - INPUT_JSON=/app/cv_data.json
+      - OUTPUT_DOCX=/app/output/output_cv.docx
+    volumes:
+      - ./cv_data.json:/app/cv_data.json
+      - ./json_to_cv.py:/app/json_to_cv.py
+      - ./output:/app/output  # Mount the output directory
+      - ./ats_analysis.py:/app/ats_analysis.py
+    working_dir: /app
