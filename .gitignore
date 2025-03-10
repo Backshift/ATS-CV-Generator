@@ -1,2 +1,3 @@
 output/*
 !output/_.txt
+cv_data.json

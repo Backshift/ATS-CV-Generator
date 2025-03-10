@@ -56,7 +56,7 @@ def add_strengths_and_expertise_section(doc, strengths):
             bullet.paragraph_format.space_after = Pt(0)
 
 def add_experience_section(doc, experience):
-    """Adds a professional experience section."""
+    """Adds a professional experience section with an intro and bullet points, ensuring spacing after bullet points."""
     if experience:
         add_section_title(doc, "PROFESSIONAL EXPERIENCE")
         
@@ -69,12 +69,34 @@ def add_experience_section(doc, experience):
             
             date_run = job_title.add_run(" " * 50 + job["dates"])
             date_run.bold = True
+
+            # Handle description (Intro + Bullet Points)
+            description = job.get("description", {})
             
-            doc.add_paragraph(job["description"])
-            
-            for acc in job.get("accomplishments", []):
-                bullet = doc.add_paragraph("• " + acc)
-                bullet.paragraph_format.space_after = Pt(0)
+            # Add Intro (if available)
+            intro = description.get("intro", "")
+            if intro:
+                doc.add_paragraph(intro)
+
+            # Add Bullet Points (if available)
+            details = description.get("details", [])
+            if details:
+                for line in details:
+                    bullet = doc.add_paragraph("• " + line)
+                    bullet.paragraph_format.space_after = Pt(0)
+
+                # Add a blank paragraph for spacing after the last bullet point
+                doc.add_paragraph()
+
+            # Handle Accomplishments (if available)
+            accomplishments = job.get("accomplishments", [])
+            if accomplishments:
+                for acc in accomplishments:
+                    bullet = doc.add_paragraph("• " + acc)
+                    bullet.paragraph_format.space_after = Pt(0)
+
+                # Add a blank paragraph for spacing after accomplishments
+                doc.add_paragraph()
 
 def create_cv_from_json(json_file, output_docx):
     with open(json_file, 'r', encoding='utf-8') as f:
