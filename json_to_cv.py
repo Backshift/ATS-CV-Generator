@@ -149,6 +149,60 @@ def create_cv_from_json(json_file, output_docx):
     doc.save(output_docx)
     print(f"CV saved as {output_docx}")
 
+
+def create_cv_for_api(json_file, output_docx):
+    data = json_file
+    # with open(json_file, 'r', encoding='utf-8') as f:
+    #     data = json.load(f)
+    
+    doc = Document()
+    sections = doc.sections
+    for section in sections:
+        section.top_margin = Inches(0.5)
+        section.bottom_margin = Inches(0.5)
+        section.left_margin = Inches(0.75)
+        section.right_margin = Inches(0.75)
+    
+    style = doc.styles['Normal']
+    style.font.name = 'Arial'
+    style.font.size = Pt(10.5)
+    
+    # Name at the top
+    name = doc.add_paragraph()
+    name.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+    run = name.add_run(data.get("name", "Your Name").upper())
+    run.bold = True
+    run.font.size = Pt(14)
+    
+    # Contact Info
+    contact = doc.add_paragraph()
+    contact.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+    contact.add_run(data.get("phone", "Your Phone Number") + " • ").bold = True
+    contact.add_run(data.get("email", "Your Email") + " • ").bold = True
+    contact.add_run(data.get("contact", "Your Location")).bold = True
+    
+    add_horizontal_line(doc)
+    
+    # Summary
+    add_text_section(doc, "SOFTWARE DEVELOPER", data.get("summary", ""), WD_PARAGRAPH_ALIGNMENT.CENTER)
+    
+    # Skills and Strengths
+    add_skills_section(doc, data.get("skills", []))
+    add_strengths_and_expertise_section(doc, data.get("strengths_and_expertise", []))
+    
+    # Experience
+    add_experience_section(doc, data.get("experience", []))
+    
+    # Education (if needed)
+    if data.get("education"):
+        add_section_title(doc, "EDUCATION")
+        for edu in data.get("education", []):
+            doc.add_paragraph(f"{edu['degree']} - {edu['institution']} ({edu['year']})")
+
+    doc.save(output_docx)
+    print(f"CV saved as {output_docx}")
+
+
 if __name__ == "__main__":
     from ats_analysis import analyze_cv
     input_json = os.getenv("INPUT_JSON", "cv_data.json")

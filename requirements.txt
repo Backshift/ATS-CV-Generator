@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+jinja2
+python-docx
+nltk
+pyspellchecker
+python-multipart

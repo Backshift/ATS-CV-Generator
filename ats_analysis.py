@@ -117,3 +117,44 @@ def analyze_cv(file_path, full_name):
     print(check_spelling(text))
     
     return "✅ CV analysis complete with detailed feedback."
+
+
+def analyze_cv_api(file_path, full_name):
+    result = ""
+
+    # Check file type and log it
+    result += f"File Type: {check_file_type(file_path)}\n"
+    result += f"Last Modified Date: {check_last_modified_date(file_path)}\n"
+
+    # Check filename for the full name and length
+    name_check, name_length_check = check_file_name(file_path, full_name)
+    result += f"Filename Check: {name_check}\n"
+    result += f"Filename Length Check: {name_length_check}\n"
+
+    # Check file size
+    result += f"File Size: {check_file_size(file_path)}\n"
+
+    # Word count and page count checks
+    text = read_docx(file_path)
+    word_count, page_count = count_words_and_pages(text)
+    result += f"✅ Word count: {word_count} (Ideal: 350-800)" if 350 <= word_count <= 800 else f"❌ Word count: {word_count} (Out of ideal range)\n"
+    result += f"✅ Estimated page count: {page_count} (Ideal: 1-2 pages)" if 1 <= page_count <= 2 else f"❌ Estimated page count: {page_count} (Out of ideal range)\n"
+
+    # Font and color checks
+    size_check, font_check, color_check = check_font_and_colors(file_path)
+    result += f"Font Size Check: {size_check}\n"
+    result += f"Font Type Check: {font_check}\n"
+    result += f"Font Color Check: {color_check}\n"
+
+    # Section check (e.g., header, skills, experience)
+    result += f"Sections Check: {check_sections(text)}\n"
+
+    # Contact info check (email, phone)
+    email_check, phone_check = check_contact_info(text)
+    result += f"Email Check: {email_check}\n"
+    result += f"Phone Check: {phone_check}\n"
+
+    # Spelling check
+    result += f"Spelling Check: {check_spelling(text)}\n"
+
+    return result

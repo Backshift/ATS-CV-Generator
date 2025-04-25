@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CV Generator & ATS Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            background-color: #f4f4f8;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        form {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.05);
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 6px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input[type="submit"] {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        pre {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>CV Generator & ATS Checker</h1>
+
+    <h2>1. Generate Your CV</h2>
+    <form method="post" enctype="multipart/form-data" action="/">
+        <label for="json_file">Select a JSON file:</label><br>
+        <input type="file" id="json_file" name="json_file" accept=".json"><br>
+
+        <label for="json_text">Or paste JSON here:</label><br>
+        <textarea id="json_text" name="json_text" rows="10" placeholder='{"name": "John Doe", ...}'></textarea><br>
+
+        <input type="submit" value="Generate CV">
+    </form>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if json_output %}
+        <h3>Parsed JSON:</h3>
+        <pre>{{ json_output | tojson(indent=2) }}</pre>
+    {% endif %}
+
+    <h2>2. ATS Compatibility Check</h2>
+    <form method="post" enctype="multipart/form-data" action="/ats-check">
+        <label for="cv_file">Upload your CV (.docx):</label><br>
+        <input type="file" id="cv_file" name="cv_file" accept=".docx"><br>
+        <input type="submit" value="Check ATS Compatibility">
+    </form>
+
+    {% if ats_result %}
+        <h3>ATS Check Results:</h3>
+        <pre>{{ ats_result }}</pre>
+    {% endif %}
+</body>
+</html>

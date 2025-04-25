@@ -1,17 +1,12 @@
-# Use an official Python runtime as a parent image
 FROM python:3.9
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy the application files into the container
 COPY . /app
 
-# Install dependencies
-RUN pip install --no-cache-dir python-docx nltk pyspellchecker
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Download necessary NLTK data (punkt tokenizer)
+# Optional: only download punkt if you need it
 RUN python -m nltk.downloader punkt
 
-# Command to run the script
-CMD ["python", "json_to_cv.py"]
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8888", "--reload"]
