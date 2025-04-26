@@ -50,6 +50,7 @@ async def handle_upload(
             "error": error
         })
 
+MAX_DOCX_SIZE_MB = 12
 
 @app.post("/ats-check", response_class=HTMLResponse)
 async def ats_check(
@@ -57,14 +58,33 @@ async def ats_check(
     cv_file: UploadFile = File(...)
 ):
     try:
-        contents = await cv_file.read()
         original_filename = cv_file.filename or ""
+        
+        # Extension Check
+        if not original_filename.lower().endswith('.docx'):
+            raise HTTPException(status_code=400, detail="Invalid file type. Please upload a .docx file.")
+
+        # Content Type Check
+        if cv_file.content_type != "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+            raise HTTPException(status_code=400, detail="Invalid content type. Only DOCX files are allowed.")
+
+        contents = await cv_file.read()
+
+        # File Size Check
+        if len(contents) > MAX_DOCX_SIZE_MB * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File too large. Max allowed size is 5MB.")
+
+        # Validate DOCX structure
+        try:
+            doc = Document(BytesIO(contents))  # Try opening it directly
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Uploaded file is not a valid DOCX: {e}")
+
+        # Save to temp location (you still need the file path for downstream use)
         temp_path = f"/tmp/{uuid.uuid4()}.docx"
         with open(temp_path, "wb") as f:
             f.write(contents)
 
-        # You can extract the name from the file or parse inside the function
-        # But if it's required to compare filename to name inside CV:
         ats_result = analyze_cv_api(temp_path, original_filename)
 
         return templates.TemplateResponse("page.html", {
@@ -72,7 +92,18 @@ async def ats_check(
             "json_output": None,
             "ats_result": ats_result
         })
+
+    except HTTPException as he:
+        # Catch validation errors
+        return templates.TemplateResponse("page.html", {
+            "request": request,
+            "json_output": None,
+            "ats_result": None,
+            "error": he.detail
+        })
+
     except Exception as e:
+        # Catch unexpected errors
         return templates.TemplateResponse("page.html", {
             "request": request,
             "json_output": None,
