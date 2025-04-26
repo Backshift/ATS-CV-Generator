@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form, UploadFile, File
+from fastapi import FastAPI, Request, Form, UploadFile, File, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 import json
@@ -6,6 +6,8 @@ import uuid
 import os
 from json_to_cv import create_cv_for_api
 from ats_analysis import analyze_cv, analyze_cv_api
+from docx import Document
+from io import BytesIO
 
 app = FastAPI()
 templates = Jinja2Templates(directory="html")
