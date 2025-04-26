@@ -12,6 +12,13 @@ from io import BytesIO
 app = FastAPI()
 templates = Jinja2Templates(directory="html")
 
+def delete_file(path: str):
+    try:
+        if os.path.exists(path):
+            os.remove(path)
+    except Exception as e:
+        print(f"Error deleting file {path}: {e}")
+
 @app.get("/", response_class=HTMLResponse)
 async def form_page(request: Request):
     return templates.TemplateResponse("page.html", {"request": request, "json_output": None})
@@ -19,6 +26,7 @@ async def form_page(request: Request):
 @app.post("/", response_class=HTMLResponse)
 async def handle_upload(
     request: Request,
+    background_tasks: BackgroundTasks,
     json_file: UploadFile = File(None),
     json_text: str = Form("")
 ):
@@ -39,10 +47,17 @@ async def handle_upload(
                 "error": error
             })
 
-        # Save DOCX and return it
         output_path = f"/tmp/cv_{uuid.uuid4()}.docx"
         create_cv_for_api(json_data, output_path)
-        return FileResponse(output_path, filename="cv.docx", media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+        # Schedule background deletion AFTER response is sent
+        background_tasks.add_task(delete_file, output_path)
+
+        return FileResponse(
+            path=output_path,
+            filename="cv.docx",
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
 
     except Exception as e:
         error = f"Invalid JSON: {e}"
@@ -112,6 +127,10 @@ async def ats_check(
             "ats_result": None,
             "error": f"Failed to analyze CV: {e}"
         })
+    finally:
+        # Clean up temp file if it was created
+        if temp_path and os.path.exists(temp_path):
+            os.remove(temp_path)
 
 @app.get("/download-json")
 async def download_example_json():
